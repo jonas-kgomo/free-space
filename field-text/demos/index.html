@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Space | Field-Based Typography</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Source+Serif+Pro:ital,wght@0,400..800;1,400..800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f8f8f8;
+            --border: #eeeeee;
+            --text: #000000;
+            --text-dim: #666666;
+            --font-main: 'Inter', sans-serif;
+            --font-serif: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        html.dark {
+            --bg: #050505;
+            --surface: #0a0a0a;
+            --border: #1a1a1a;
+            --text: #ffffff;
+            --text-dim: #888888;
+            --accent: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        aside {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-transform: uppercase;
+        }
+
+        .logo-box {
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+        }
+
+        .nav-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            margin: 1.5rem 0 0.5rem 0.5rem;
+            font-weight: 500;
+        }
+
+        .demo-link {
+            padding: 0.6rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .demo-link:hover {
+            color: var(--text);
+            background: var(--border);
+        }
+
+        .demo-link.active {
+            color: var(--text);
+            background: var(--bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-weight: 600;
+        }
+
+        main {
+            position: relative;
+            background: var(--bg);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            padding: 0;
+            margin: 0;
+        }
+
+        .overlay-header {
+            max-width: 800px;
+            margin: 4rem auto 2rem auto;
+            border-bottom: 2px solid var(--text);
+            padding-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 3.5rem;
+            margin: 0;
+            letter-spacing: -0.05em;
+            font-weight: 700;
+            line-height: 0.8;
+            text-transform: uppercase;
+        }
+
+        #demo-desc {
+            font-family: var(--font-main);
+            font-weight: 300;
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            line-height: 1.2;
+            margin-top: 1.2rem;
+            letter-spacing: -0.01em;
+        }
+
+        .technical-panel {
+            max-width: 800px;
+            margin: 2rem auto 8rem auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .explanation {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .metrics-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            border: 1px solid var(--text);
+            padding: 0.4rem 2rem;
+            display: flex;
+            gap: 2.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            z-index: 100;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .controls-layer {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            width: 240px;
+            background: var(--bg);
+            border: 1px solid var(--text);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 100;
+        }
+
+        .control-item label {
+            display: block;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        input[type=range] {
+            width: 100%;
+            height: 2px;
+            background: var(--text-dim);
+            appearance: none;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--text);
+            cursor: pointer;
+        }
+
+        .benchmark-panel {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            width: 380px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            display: none;
+            flex-direction: column;
+            gap: 2rem;
+            z-index: 101;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .benchmark-panel.visible {
+            display: flex;
+        }
+
+        .bench-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bench-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .bench-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+        }
+
+        .bench-value {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            color: var(--text);
+            font-weight: 400;
+        }
+
+        .bench-bar-bg {
+            height: 4px;
+            background: var(--border);
+            width: 100%;
+            position: relative;
+        }
+
+        .bench-bar-fill {
+            height: 100%;
+            background: var(--text);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bench-sub {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .bench-header {
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .formula-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        .formula-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        #demo-formula {
+            font-family: var(--font-main);
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+
+        .toggle-theme {
+            position: absolute;
+            bottom: 2rem;
+            left: 1.5rem;
+            background: none;
+            border: 1px solid var(--text-dim);
+            color: var(--text-dim);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo"><div class="logo-box"></div> Free Space</div>
+
+        <div class="nav-label">Foundations</div>
+        <div class="demo-link" onclick="loadDemo('editorial_page')">Editorial Page</div>
+        <div class="demo-link" onclick="loadDemo('technical_brief')">Technical Brief</div>
+        <div class="demo-link" onclick="loadDemo('statue_field')">Statue Field</div>
+        <div class="demo-link" onclick="loadDemo('microscope')">Microscope</div>
+        <div class="demo-link" onclick="loadDemo('raycasting')">Raycasting</div>
+        <div class="demo-link" onclick="loadDemo('ray_marching')">Ray Marching</div>
+        <div class="demo-link" onclick="loadDemo('unified_field')">Unified Field</div>
+
+        <div class="nav-label">Mathematics</div>
+        <div class="demo-link" onclick="loadDemo('boolean_composition')">Boolean Ops</div>
+        <div class="demo-link" onclick="loadDemo('smooth_blending')">Smooth Smin</div>
+        <div class="demo-link" onclick="loadDemo('polygon_flow')">Polygon Flow</div>
+        <div class="demo-link" onclick="loadDemo('gradient_sampling')">Continuity</div>
+
+        <div class="nav-label">Performance</div>
+        <div class="demo-link" onclick="loadDemo('mutation_test')">Real-Time</div>
+        <div class="demo-link" onclick="loadDemo('resolution_independence')">Zoom/Scale</div>
+        <div class="demo-link" onclick="loadDemo('adaptive_width')">Adaptive</div>
+        <div class="demo-link" onclick="loadDemo('benchmarks')">Benchmarks</div>
+
+        <button class="toggle-theme" onclick="toggleTheme()">Toggle Theme</button>
+    </aside>
+
+    <main>
+        <div class="overlay-header">
+            <h2 id="demo-title">Living Page</h2>
+            <div id="demo-desc">Deterministic field-based flow.</div>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="view-3d" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); pointer-events: none; opacity: 0.15; transition: opacity 0.5s;"></canvas>
+            <canvas id="view-normal"></canvas>
+        </div>
+
+        <div class="technical-panel">
+            <div class="formula-box">
+                <div class="formula-label">Field Concept</div>
+                <div id="demo-formula">
+                    Spatial Equilibrium
+                </div>
+            </div>
+            <div class="explanation">
+                <div class="formula-label">Technical Insight</div>
+                <div id="technical-explanation">
+                    The layout engine samples the signed distance field at every line height interval to solve for available horizontal segments.
+                </div>
+            </div>
+        </div>
+
+        <div class="metrics-bar">
+            <span>SDF: <span id="sdf-telemetry">0.0</span></span>
+            <span>Prep: <span id="prepare-ms">0.0</span></span>
+            <span>Flow: <span id="layout-ms">0.0</span></span>
+            <span>Draw: <span id="render-ms">0.0</span></span>
+            <span>FPS: <span id="fps">0</span></span>
+        </div>
+
+        <div class="benchmark-panel" id="bench-panel">
+            <div class="bench-header">Live Benchmarking Core</div>
+            <div id="bench-results">
+                <!-- Dynamic results -->
+            </div>
+            <div class="bench-sub" style="margin-top: 1rem;">* 50,000 Glyph stress test on current hardware</div>
+        </div>
+
+        <div class="controls-layer" id="controls">
+            <!-- Dynamic Controls -->
+        </div>
+    </main>
+
+    <script type="module" src="./main.ts"></script>
+    <script>
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+    </script>
+</body>
+</html>

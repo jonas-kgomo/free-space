@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Distance Field Smoke Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #0a0a0a; color: #fff; }
+        .result { padding: 10px; border-radius: 4px; margin-top: 10px; }
+        .success { background: #1a4a1a; border: 1px solid #3a7a3a; }
+        .failure { background: #4a1a1a; border: 1px solid #7a3a3a; }
+        pre { background: #111; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Distance Field Smoke Test</h1>
+    <p>This test imports the <strong>bundled</strong> library from <code>dist/index.mjs</code> to ensure the NPM package is correctly structured.</p>
+    
+    <div id="status">Testing...</div>
+    <div id="output"></div>
+
+    <script type="module">
+        import * as DF from '../dist/index.mjs';
+
+        const statusEl = document.getElementById('status');
+        const outputEl = document.getElementById('output');
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error("Assertion failed: " + message);
+            }
+        }
+
+        async function runTests() {
+            try {
+                // 1. Check exports
+                assert(typeof DF.prepare === 'function', "prepare is exported");
+                assert(typeof DF.layout === 'function', "layout is exported");
+                assert(typeof DF.flowText === 'function', "flowText is exported");
+                
+                // 2. Test prepare
+                const text = "Free Space Test";
+                const font = "16px sans-serif";
+                const prepared = DF.prepare(text, font);
+                
+                assert(prepared.text === text, "prepared text matches input");
+                assert(prepared.segments.length > 0, "has segments");
+                assert(prepared.totalWidth > 0, "has totalWidth");
+                
+                // 3. Test layout
+                const constraints = { maxWidth: 100, lineHeight: 20 };
+                const layoutResult = DF.layout(prepared, constraints);
+                
+                assert(layoutResult.lines.length >= 1, "has at least one line");
+                assert(layoutResult.lines[0].targetWidth === 100, "targetWidth is preserved");
+                
+                statusEl.innerText = "✅ Smoke Test Passed";
+                statusEl.className = "result success";
+                outputEl.innerHTML = `<h3>Layout Result:</h3><pre>${JSON.stringify(layoutResult, null, 2)}</pre>`;
+
+            } catch (err) {
+                statusEl.innerText = "❌ Smoke Test Failed";
+                statusEl.className = "result failure";
+                outputEl.innerHTML = `<p>${err.message}</p><pre>${err.stack}</pre>`;
+                console.error(err);
+            }
+        }
+
+        runTests();
+    </script>
+</body>
+</html>
